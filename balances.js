@@ -6,6 +6,10 @@ module.exports.createBalances = async data => {
   const balances = new Map();
   const closingBalances = [];
 
+  const hexToDecimal = hex => {
+    return parseInt(hex.slice(2), 16);
+  };
+
   const setDeposits = event => {
     const wallet = event.to;
 
@@ -13,7 +17,7 @@ module.exports.createBalances = async data => {
     let withdrawals = (balances.get(wallet) || {}).withdrawals || new BigNumber(0);
 
     if (event.value) {
-      deposits = deposits.plus(new BigNumber(event.value));
+      deposits = deposits.plus(new BigNumber(hexToDecimal(event.value._hex)));
       balances.set(wallet, { deposits, withdrawals });
     }
   };
@@ -25,7 +29,7 @@ module.exports.createBalances = async data => {
     let withdrawals = (balances.get(wallet) || {}).withdrawals || new BigNumber(0);
 
     if (event.value) {
-      withdrawals = withdrawals.plus(new BigNumber(event.value));
+      withdrawals = withdrawals.plus(new BigNumber(hexToDecimal(event.value._hex)));
       balances.set(wallet, { deposits, withdrawals });
     }
   };
@@ -41,10 +45,15 @@ module.exports.createBalances = async data => {
     }
 
     const balance = value.deposits.minus(value.withdrawals);
+    if (balance.lt(0)) {
+      console.log('deposits: ', value.deposits.toString());
+      console.log('withdrawals: ', value.withdrawals.toString());
+      console.log('key: ', key);
+    }
 
     closingBalances.push({
       wallet: key,
-      balance: balance.div(10 ** parseInt(data.decimals)).toFixed(data.decimals)
+      balance: balance.div(10 ** parseInt(data.decimals)).toFixed(18)
     });
   }
 
