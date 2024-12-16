@@ -1,23 +1,18 @@
 "use strict";
-var BigNumber = require("bignumber.js");
 const enumerable = require("linq");
 
 module.exports.createBalances = async data => {
   const balances = new Map();
   const closingBalances = [];
 
-  const hexToDecimal = hex => {
-    return parseInt(hex.slice(2), 16);
-  };
-
   const setDeposits = event => {
     const wallet = event.to;
 
-    let deposits = (balances.get(wallet) || {}).deposits || new BigNumber(0);
-    let withdrawals = (balances.get(wallet) || {}).withdrawals || new BigNumber(0);
+    let deposits = (balances.get(wallet) || {}).deposits || 0n;
+    let withdrawals = (balances.get(wallet) || {}).withdrawals || 0n;
 
     if (event.value) {
-      deposits = deposits.plus(new BigNumber(hexToDecimal(event.value._hex)));
+      deposits = deposits + BigInt(event.value._hex);
       balances.set(wallet, { deposits, withdrawals });
     }
   };
@@ -25,11 +20,11 @@ module.exports.createBalances = async data => {
   const setWithdrawals = event => {
     const wallet = event.from;
 
-    let deposits = (balances.get(wallet) || {}).deposits || new BigNumber(0);
-    let withdrawals = (balances.get(wallet) || {}).withdrawals || new BigNumber(0);
+    let deposits = (balances.get(wallet) || {}).deposits || 0n;
+    let withdrawals = (balances.get(wallet) || {}).withdrawals || 0n;
 
     if (event.value) {
-      withdrawals = withdrawals.plus(new BigNumber(hexToDecimal(event.value._hex)));
+      withdrawals = withdrawals + BigInt(event.value._hex);
       balances.set(wallet, { deposits, withdrawals });
     }
   };
@@ -44,21 +39,16 @@ module.exports.createBalances = async data => {
       continue;
     }
 
-    const balance = value.deposits.minus(value.withdrawals);
-    if (balance.lt(0)) {
-      console.log('deposits: ', value.deposits.toString());
-      console.log('withdrawals: ', value.withdrawals.toString());
-      console.log('key: ', key);
-    }
+    const balance = value.deposits - value.withdrawals;
 
     closingBalances.push({
       wallet: key,
-      balance: balance.div(10 ** parseInt(data.decimals)).toFixed(18)
+      balance
     });
   }
 
   return enumerable
     .from(closingBalances)
-    .orderByDescending(x => parseFloat(x.balance))
+    .orderByDescending(x => x.balance)
     .toArray();
 };

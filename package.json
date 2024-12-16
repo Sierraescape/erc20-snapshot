@@ -1,6 +1,6 @@
 {
   "name": "sierraescape-erc20-snapshot",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "ERC20 Token Snapshot",
   "main": "index.js",
   "scripts": {

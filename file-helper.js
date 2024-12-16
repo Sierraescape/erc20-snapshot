@@ -18,13 +18,20 @@ const ensureDirectoryExists = async directory => {
   }
 };
 
+const bigintReplacer = (key, value) => {
+	if (typeof value === "bigint") {
+		return value.toString();
+	}
+	return value;
+}
+
 module.exports.ensureDirectory = async directory => {
   ensureDirectoryExists(directory);
 };
 
 module.exports.writeFile = async (filePath, data) => {
   await ensureDirectoryExists(path.dirname(filePath));
-  await writeFileAsync(filePath, JSON.stringify(data, null, 2));
+  await writeFileAsync(filePath, JSON.stringify(data, bigintReplacer, 2));
 };
 
 module.exports.parseFile = async filePath => {
