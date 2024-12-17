@@ -12,7 +12,7 @@ module.exports.createBalances = async data => {
     let withdrawals = (balances.get(wallet) || {}).withdrawals || 0n;
 
     if (event.value) {
-      deposits = deposits + BigInt(event.value._hex);
+      deposits = deposits + BigInt(event.value);
       balances.set(wallet, { deposits, withdrawals });
     }
   };
@@ -24,7 +24,7 @@ module.exports.createBalances = async data => {
     let withdrawals = (balances.get(wallet) || {}).withdrawals || 0n;
 
     if (event.value) {
-      withdrawals = withdrawals + BigInt(event.value._hex);
+      withdrawals = withdrawals + BigInt(event.value);
       balances.set(wallet, { deposits, withdrawals });
     }
   };
